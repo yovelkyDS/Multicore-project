@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GameTECs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/style.css" />
+</head>
+
+<body>
+    <header>
+        <div class="wrap">
+            <div class="title-row">
+                <h1>GameTECs</h1>
+                <span class="count" id="count"></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout wrap">
+        <aside class="filters" id="filters">
+            <div class="search-box">
+                <label class="control" title="Buscar por título o género">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true">
+                        <path
+                            d="M21 21L15.8 15.8M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+                            stroke="#9fb1c3" stroke-width="1.6" stroke-linecap="round" />
+                    </svg>
+                    <input id="q" type="search" placeholder="Buscar juegos, géneros…" autocomplete="off" />
+                </label>
+            </div>
+
+            <div class="group">
+                <h3>Tipo de juego</h3>
+                <div class="checklist" id="filters-types"></div>
+            </div>
+
+            <div class="group">
+                <h3>Plataforma</h3>
+                <div class="checklist" id="filters-platforms"></div>
+            </div>
+
+            <div class="group">
+                <h3>Formato</h3>
+                <div class="checklist" id="filters-formats"></div>
+            </div>
+
+            <div class="group">
+                <h3>Tienda / sitio</h3>
+                <div class="checklist" id="filters-stores"></div>
+            </div>
+        </aside>
+
+        <main class="content-area">
+            <div class="toolbar">
+                <label class="select" title="Ordenar resultados">
+                    <select id="sort">
+                        <option value="name-asc">Ordenar: nombre (A→Z)</option>
+                        <option value="name-desc">Ordenar: nombre (Z→A)</option>
+                        <option value="price-asc">Ordenar: precio (menor→mayor)</option>
+                        <option value="price-desc">Ordenar: precio (mayor→menor)</option>
+                        <option value="discount-desc">Ordenar: % desc (mayor→menor)</option>
+                        <option value="discount-asc">Ordenar: % desc (menor→mayor)</option>
+                        <option value="mc-desc">Ordenar: Metacritic (alto→bajo)</option>
+                        <option value="mc-asc">Ordenar: Metacritic (bajo→alto)</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="grid" id="grid" aria-live="polite"></div>
+        </main>
+    </div>
+
+    <template id="card-tpl">
+        <article class="card" tabindex="0">
+            <div class="cover">
+                <img loading="lazy" alt="Portada del videojuego" />
+                <div class="platforms"></div>
+                <div class="badge-discount" aria-hidden="true"></div>
+            </div>
+            <div class="content">
+                <div class="title"></div>
+                <div class="meta">
+                    <span class="pill genre"></span>
+                    <span class="pill year"></span>
+                    <span class="pill metacritic" title="Calificación Metacritic"><span class="mc-score"></span>
+                        MC</span>
+                </div>
+                <div class="pricing" aria-label="Precios">
+                    <div class="price-line">
+                        <span class="best-price" aria-label="Mejor precio"></span>
+                        <span class="best-store"></span>
+                    </div>
+                    <div class="price-line small">
+                        <span class="regular">Precio regular</span>
+                        <span class="regular-price" aria-label="Precio regular tachado"></span>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </template>
+
+    <script src="JS/mian.js" defer></script>
+</body>
+
+</html>
