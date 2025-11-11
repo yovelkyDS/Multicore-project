@@ -1,12 +1,6 @@
 // main.js (ESM) — requiere que index.html lo cargue con: <script type="module" src="JS/main.js"></script>
 
-// ======= Imports Firestore (CDN v10) =======
-import {
-    collection,
-    getDocs,
-    writeBatch,
-    doc
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { ref, get } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
 // ======= Utilidades =======
 const moneyFmt = new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', maximumFractionDigits: 0 });
@@ -281,51 +275,35 @@ q.addEventListener('blur', () => q.parentElement.classList.remove('ring'));
 // ======= Carga inicial (local) =======
 applyFilters();
 
-// ======= Firestore: cargar y sembrar sólo si está vacío =======
-async function loadFromFirestoreAndMaybeSeed() {
-    const db = window.__DB__;
-    if (!db) return; // si aún no cargó el bootstrap de Firebase
+async function loadFromRealtimeDB() {
+  const db = window.__RTDB__;
+  if (!db) return;
 
-    const colRef = collection(db, "games");
-    const snap = await getDocs(colRef);
+  const snapshot = await get(ref(db, "juegos"));
+  if (!snapshot.exists()) {
+    console.warn("No hay datos en Realtime Database");
+    return;
+  }
 
-    // Si la colección está vacía, sembramos una única vez usando baseGames
-    if (snap.empty) {
-        const batch = writeBatch(db);
-        baseGames.forEach(g => {
-            batch.set(doc(colRef), {
-                title: g.title,
-                year: g.year,
-                genre: g.genre,
-                platforms: g.platforms,
-                type: g.type,
-                format: g.format
-            });
-        });
-        await batch.commit();
-    }
+  const data = snapshot.val();
+  const items = Object.values(data).map(j => ({
+    title: j.nombreJuego,
+    genre: "Otro",
+    year: 2024,
+    platforms: ["PC"],
+    type: "Digital",
+    format: "Estándar",
+    best: { price: j.precios?.amazon?.precio || 0, name: "Amazon" },
+    regular: j.precios?.playstation?.precio || 0,
+    discountPct: 0,
+    mc: 70
+  }));
 
-    // Leemos (segunda pasada si se sembró, o la primera si ya existían docs)
-    const fresh = await getDocs(colRef);
-    const items = [];
-    fresh.forEach(d => {
-        const x = d.data();
-        items.push(enrich({
-            title: x.title ?? "Sin título",
-            year: x.year ?? 2024,
-            genre: x.genre ?? "Otro",
-            platforms: Array.isArray(x.platforms) ? x.platforms : [x.platforms].filter(Boolean),
-            type: x.type ?? "Digital",
-            format: x.format ?? "Estándar"
-        }));
-    });
-
-    if (items.length) {
-        pricedGames = items;
-        rebuildFilters();
-        applyFilters();
-    }
+  if (items.length) {
+    pricedGames = items;
+    rebuildFilters();
+    applyFilters();
+  }
 }
 
-// Intenta cargar desde Firestore (si index.html ya expuso window.__DB__)
-loadFromFirestoreAndMaybeSeed().catch(console.error);
+loadFromRealtimeDB().catch(console.error);
