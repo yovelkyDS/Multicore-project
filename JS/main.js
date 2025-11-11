@@ -219,6 +219,65 @@ function goToPage(n) {
     ensurePager();
     count.textContent = `${lastFiltered.length} ${lastFiltered.length === 1 ? 'resultado' : 'resultados'}`;
 }
+// ======= Carga desde Realtime Database (Firebase) =======
+// ======= Carga desde Realtime Database (Firebase) =======
+async function loadFromRealtimeDB() {
+  const db = window.__RTDB__;
+  if (!db) return;
+
+  const snapshot = await get(ref(db, "juegos"));
+  if (!snapshot.exists()) {
+    console.warn("No hay datos en Realtime Database");
+    return;
+  }
+
+  const data = snapshot.val();
+
+  const items = Object.values(data).map(j => {
+    const amazon = j?.precios?.amazon?.precio ?? null;
+    const psn = j?.precios?.playstation?.precio ?? null;
+
+    // Construimos storePrices para que el resto del código (filtros) no falle
+    const storePrices = [
+      ...(amazon ? [{ name: "Amazon", price: Math.round(amazon) }] : []),
+      ...(psn ? [{ name: "PlayStation Store", price: Math.round(psn) }] : []),
+    ];
+
+    // Si no hay precios, evita que reviente: damos un precio “0” y tienda “N/D”
+    const best = storePrices.length
+      ? storePrices.reduce((a, b) => (a.price <= b.price ? a : b))
+      : { name: "N/D", price: 0 };
+
+    // “regular” como el mayor de los disponibles (para que el % desc tenga sentido)
+    const regular = storePrices.length
+      ? Math.max(...storePrices.map(s => s.price))
+      : 0;
+
+    const discountPct = regular > 0 ? Math.max(0, Math.round((1 - best.price / regular) * 100)) : 0;
+
+    return {
+      title: j.nombreJuego ?? "Sin título",
+      genre: "Otro",
+      year: 2024,
+      platforms: ["PC"],      // ajusta si guardas plataformas en RTDB
+      type: "Digital",
+      format: "Estándar",
+
+      // Claves que la UI espera
+      storePrices,
+      best,
+      regular,
+      discountPct,
+      mc: 70,                 // placeholder si no tienes MC
+    };
+  });
+
+  if (items.length) {
+    pricedGames = items;
+    rebuildFilters();
+    applyFilters();
+  }
+}
 
 // ======= Filtros y orden =======
 function applyFilters() {
@@ -275,35 +334,6 @@ q.addEventListener('blur', () => q.parentElement.classList.remove('ring'));
 // ======= Carga inicial (local) =======
 applyFilters();
 
-async function loadFromRealtimeDB() {
-  const db = window.__RTDB__;
-  if (!db) return;
-
-  const snapshot = await get(ref(db, "juegos"));
-  if (!snapshot.exists()) {
-    console.warn("No hay datos en Realtime Database");
-    return;
-  }
-
-  const data = snapshot.val();
-  const items = Object.values(data).map(j => ({
-    title: j.nombreJuego,
-    genre: "Otro",
-    year: 2024,
-    platforms: ["PC"],
-    type: "Digital",
-    format: "Estándar",
-    best: { price: j.precios?.amazon?.precio || 0, name: "Amazon" },
-    regular: j.precios?.playstation?.precio || 0,
-    discountPct: 0,
-    mc: 70
-  }));
-
-  if (items.length) {
-    pricedGames = items;
-    rebuildFilters();
-    applyFilters();
-  }
-}
-
-loadFromRealtimeDB().catch(console.error);
+window.addEventListener("load", () => {
+  loadFromRealtimeDB().catch(console.error);
+});

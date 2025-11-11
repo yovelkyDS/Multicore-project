@@ -12,25 +12,27 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
         const firebaseConfig = {
-        apiKey: "AIzaSyBY_mZvnTXSsj-FIet5OG4V9Y8B6rrjl60",
-        authDomain: "multicore-project.firebaseapp.com",
-        databaseURL: "https://multicore-project-default-rtdb.firebaseio.com",
-        projectId: "multicore-project",
-        storageBucket: "multicore-project.firebasestorage.app",
-        messagingSenderId: "196261686645",
-        appId: "1:196261686645:web:4145c0bdceca0515c1f73c",
-        measurementId: "G-QMLH0C0PDF"
+            apiKey: "AIzaSyBY_mZvnTXSsj-FIet5OG4V9Y8B6rrjl60",
+            authDomain: "multicore-project.firebaseapp.com",
+            databaseURL: "https://multicore-project-default-rtdb.firebaseio.com",
+            projectId: "multicore-project",
+            storageBucket: "multicore-project.firebasestorage.app",
+            messagingSenderId: "196261686645",
+            appId: "1:196261686645:web:4145c0bdceca0515c1f73c",
+            measurementId: "G-QMLH0C0PDF"
         };
 
+        // Inicializa Firebase y Realtime Database
         const app = initializeApp(firebaseConfig);
-        window.__RTDB__ = getDatabase(app);
+        const db = getDatabase(app);
 
+        // Expone la referencia global para main.js
+        window.__RTDB__ = db;
     </script>
 
-    <!-- ✅ Tu app ahora como módulo (puedes dejar el nombre "mian.js") -->
     <script type="module" src="JS/main.js"></script>
 </head>
 
