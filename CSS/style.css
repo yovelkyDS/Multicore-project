@@ -383,3 +383,13 @@ h1 {
     outline-offset: 2px;
     border-radius: 10px;
 }
+
+.ghost {
+    padding: 16px;
+    opacity: .85;
+    min-height: 60px;
+    /* da altura para que se vea */
+    display: grid;
+    place-items: center;
+    /* centrado bonito */
+}
