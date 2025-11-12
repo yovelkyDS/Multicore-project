@@ -29,29 +29,116 @@ function combosFromBase(s) {
         s.replace(/\s+/g, '')
     ]));
 }
-// Genera variantes de nombre con y sin año
-function filenameVariantsWithYears(title, year) {
-    const raw1 = simpleSanitize(title);                 // "Baldurs Gate 3"
-    const lower = raw1.toLowerCase();                    // "baldurs gate 3"
-    const noAcc = lower.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-    const bases = [raw1, lower, noAcc, slug(title)];
 
+// === Normalizador y overrides para casos difíciles ===
+function normKey(s) {
+    return String(s || '')
+        .toLowerCase()
+        .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+        .replace(/[^a-z0-9]/g, ''); // solo letras y números
+}
+
+// Mapa (estático) de casos problemáticos (título EN LA CARD -> archivo en /imagenes)
+const OVERRIDE_COVERS = new Map([
+    // Call of Duty: Modern Warfare III (2022) — por si en alguna parte aparece “III”
+    ['callofdutymodernwarfareiii', './imagenes/Call_of_Duty_Modern_Warfare_III_2022.png'],
+    // Call of Duty: Modern Warfare II (2022) — título real que usas
+    ['callofdutymodernwarfareii2022', './imagenes/Call_of_Duty_Modern_Warfare_III_2022.png'],
+    ['callofdutymodernwarfareii', './imagenes/Call_of_Duty_Modern_Warfare_III_2022.png'],
+
+    // Destiny 2: The Final Shape (expansión de pago)
+    ['destiny2thefinalshapeexpansiondepago', './imagenes/Destiny_2_The_Final_Shape.png'],
+    ['destiny2thefinalshape', './imagenes/Destiny_2_The_Final_Shape.png'],
+
+    // Hades II (Early Access) — acepta II o 2
+    ['hadesiiearlyaccess', './imagenes/Hades_II_Early Access.webp'],
+    ['hades2earlyaccess', './imagenes/Hades_II_Early Access.webp'],
+
+    // Horizon Forbidden West (el archivo tiene typo "Frobidden")
+    ['horizonforbiddenwest', './imagenes/Horizon_Frobidden_West.jpg'],
+
+    // Microsoft Flight Simulator 2024 (con espacios raros en el nombre real)
+    ['microsoftflightsimulator2024', './imagenes/Microsoft_Flight _Simulator _2024.jpg'],
+
+    // Remnant II / Remnant 2
+    ['remnantii', './imagenes/Remnant_2.jpg'],
+    ['remnant2', './imagenes/Remnant_2.jpg'],
+
+    // The Lord of the Rings: Return to Moria (archivo en orden invertido + espacio en "of the")
+    ['thelordoftheringsreturntomoria', './imagenes/Return_to_Moria_The_Lord_of the_Rings.png'],
+    ['returntomoriathelordoftherings', './imagenes/Return_to_Moria_The_Lord_of the_Rings.png'],
+
+    // Super Mario 3D World + Bowser's Fury
+    ['supermario3dworldbowsersfury', './imagenes/Super_Mario_3D_World_Bowsers_Fury.jpg'],
+
+    // The Witcher 3: Wild Hunt — Complete Edition (en dash “–” en el archivo)
+    ['thewitcher3wildhuntcompleteedition', './imagenes/The_Witcher_3_Wild_Hunt–Complete_Edition.jpg'],
+]);
+
+// Mapa (dinámico) que podemos cargar desde ./imagenes/map.json (opcional)
+const RUNTIME_COVERS = new Map();
+async function loadImageMap() {
+    try {
+        const res = await fetch('./imagenes/map.json', { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = await res.json();
+        for (const [k, v] of Object.entries(json)) {
+            if (typeof v === 'string' && v.trim()) {
+                const path = (v.startsWith('http') || v.startsWith('./') || v.startsWith('/')) ? v : `./imagenes/${v}`;
+                RUNTIME_COVERS.set(normKey(k), path);
+            }
+        }
+        if (DEBUG_IMAGES) console.log('[IMG map.json] cargado', RUNTIME_COVERS);
+    } catch (e) {
+        if (DEBUG_IMAGES) console.warn('[IMG map.json] no encontrado o inválido', e);
+    }
+}
+
+function coverOverrideForTitle(title) {
+    const key = normKey(title);
+    return RUNTIME_COVERS.get(key) || OVERRIDE_COVERS.get(key) || null;
+}
+
+// Genera variantes de nombre con/sin año y sin paréntesis
+function filenameVariantsWithYears(title, year) {
+    const raw1 = simpleSanitize(title);                       // "Astro Bot (2024)"
+    const noPar = raw1.replace(/[(){}\[\]]/g, '').trim();      // "Astro Bot 2024"
+    const lower = raw1.toLowerCase();
+    const lowerNP = noPar.toLowerCase();
+    const noAcc = lower.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    const noAccNP = lowerNP.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
+    // También probamos el slug y una variante del slug con "_"
+    const s = slug(title);               // "astro-bot-2024"
+    const sUnd = s.replace(/-/g, '_');      // "astro_bot_2024"
+
+    // Bases sobre las que generamos combinaciones
+    theBases: ;
+    const bases = [raw1, noPar, lower, lowerNP, noAcc, noAccNP, s, sUnd];
+
+    // Años a probar: el del juego + algunos recientes
     const yrs = [];
     if (Number.isFinite(year) && year > 1970 && year < 2100) yrs.push(year);
-    [2022, 2023, 2024, 2025].forEach(y => { if (!yrs.includes(y)) yrs.push(y); });
+    [2021, 2022, 2023, 2024, 2025].forEach(y => { if (!yrs.includes(y)) yrs.push(y); });
 
     const set = new Set();
-    // sin año
+
+    // Variantes sin año
     for (const b of bases) combosFromBase(b).forEach(v => set.add(v));
-    // con año (separadores comunes y paréntesis)
+
+    // Variantes con año
     for (const b of bases) {
         for (const y of yrs) {
-            const withYear = [`${b} ${y}`, `${b}_${y}`, `${b}-${y}`, `${b}(${y})`];
+            const withYear = [
+                `${b} ${y}`, `${b}_${y}`, `${b}-${y}`, `${b}(${y})`
+            ];
             withYear.forEach(w => combosFromBase(w).forEach(v => set.add(v)));
         }
     }
+
     return [...set];
 }
+
 function imageCandidatesForGame(game) {
     const names = filenameVariantsWithYears(game.title, Number(game.year));
     const cands = [];
@@ -65,11 +152,19 @@ function imageCandidatesForGame(game) {
     }
     return cands;
 }
-// cover explícita -> archivos locales -> placeholder
+
+// cover explícita/override -> archivos locales -> placeholder
 function setCardImage(imgEl, game) {
-    const manual = (game.cover && typeof game.cover === 'string') ? [game.cover] : [];
+    const override = coverOverrideForTitle(game.title);
+    const manual = override
+        ? [override]
+        : (game.cover && typeof game.cover === 'string') ? [game.cover] : [];
+
     const fallback = `https://picsum.photos/seed/${slug(game.title)}/400/225`;
-    const candidates = [...manual, ...imageCandidatesForGame(game), fallback];
+    const rawCandidates = [...manual, ...imageCandidatesForGame(game), fallback];
+
+    // Asegura URLs válidas (espacios y caracteres raros)
+    const candidates = rawCandidates.map(src => encodeURI(src));
 
     let i = 0;
     const tryNext = () => {
@@ -189,11 +284,26 @@ function rebuildFilters() {
 }
 rebuildFilters();
 
+// ========= Abrir detalle en nueva pestaña =========
+function openDetails(game) {
+    // guardamos el juego con un token único
+    const key = 'sel-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    localStorage.setItem(key, JSON.stringify(game));
+
+    // abrimos details.html con el token en la query
+    window.open('details.html?key=' + encodeURIComponent(key), '_blank'); // puedes añadir 'noopener' si quieres
+}
+
 // ================== Render tarjetas ==================
 function render(list) {
     grid.innerHTML = '';
     list.forEach((g) => {
         const node = tpl.content.cloneNode(true);
+
+        // Click en toda la card para abrir detalles
+        const cardEl = node.querySelector('.card') || node.firstElementChild || node;
+        cardEl.addEventListener('click', () => openDetails(g));
+
         const img = node.querySelector('img');
         const platsWrap = node.querySelector('.platforms');
         const title = node.querySelector('.title');
@@ -235,9 +345,7 @@ function render(list) {
             discountBadge.style.display = 'none';
         }
 
-        // 👇 Carga de imagen SIN IntersectionObserver (lazy nativo)
         if (img) setCardImage(img, g);
-
         grid.appendChild(node);
     });
 }
@@ -308,8 +416,8 @@ async function loadFromRealtimeDB() {
         const psn = j?.precios?.playstation?.precio ?? null;
 
         const storePrices = [
-            ...(amazon ? [{ name: "Amazon", price: Math.round(amazon) }] : []),
-            ...(psn ? [{ name: "PlayStation Store", price: Math.round(psn) }] : []),
+            ...(amazon ? [{ name: "Amazon", price: Math.round(amazon), url: j?.precios?.amazon?.url || null }] : []),
+            ...(psn ? [{ name: "PlayStation Store", price: Math.round(psn), url: j?.precios?.playstation?.url || null }] : []),
         ];
 
         const best = storePrices.length
@@ -342,6 +450,9 @@ async function loadFromRealtimeDB() {
             regular,
             discountPct,
             mc: Number(j.mc) || 70,
+
+            // (Opcional) tiempos HLTB si los guardas en la BD
+            hltb: j.hltb || null,
         };
     });
 
@@ -407,7 +518,12 @@ q.addEventListener('blur', () => q.parentElement.classList.remove('ring'));
 // ================== Carga inicial (local) ==================
 applyFilters();
 
-// ================== Carga remota al iniciar ==================
+// ================== Carga remota + mapa de imágenes ==================
 window.addEventListener("load", () => {
-    loadFromRealtimeDB().catch(console.error);
+    // Carga primero el mapa dinámico si existe, luego datos
+    loadImageMap()
+        .catch(console.warn)
+        .finally(() => {
+            loadFromRealtimeDB().catch(console.error);
+        });
 });
