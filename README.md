@@ -49,4 +49,29 @@ Los datos obtenidos se limpian, transforman y envían al **Firebase Realtime Dat
 La interfaz web *(index.html y details.html)* conecta con Firebase usando JavaScript y muestra la información actualizada en tiempo real, permitiendo explorar los juegos registrados.
 
 ## Ejecución del Proyecto
+### 1. Instalación de dependencias
+> [!IMPORTANT]
+> Antes de poder ejecutar el proyecto, es necesario instalar ciertos paquetes de Python que permiten que el programa funcione correctamente.
 
+Para instalarlas se debe de ejecutar el siguiente comando en la terminal:
+```bash
+pip install requests beautifulsoup4 firebase-admin howlongtobeatpy
+```
+Estas “dependencias” son librerías que el proyecto necesita para realizar tareas como conectarse a páginas web, hacer web scraping, trabajar con Firebase, o calcular la duración de los juegos.
+
+### 2. Ejecutar el script del scraping
+```bash
+python webScrapping.py
+```
+Este proceso:
+- Lee los nombres de los juegos desde `/Lista de Juegos.txt`.
+- Obtiene datos desde *Steam* y *HowLongToBeat*.
+- Sube los resultados automáticamente al Realtime Database de Firebase.
+
+### 3. Visualizae los resultados
+Abre el archivo `/index.html` en un navegador web.
+Allí se podrán explorar los juegos disponibles, ver los precios, duración y otros datos mostrados en tiempo real.
+
+## Conclusion
+El proyecto **GameTECs** demuestra que el uso de técnicas de multihilo y automatización de datos puede mejorar considerablemente la eficiencia de los procesos de recopilación y actualización de información en entornos reales.
+Además, evidencia la importancia de combinar la programación concurrente con herramientas modernas de nube y desarrollo web, logrando sistemas integrales, escalables y de fácil mantenimiento.
