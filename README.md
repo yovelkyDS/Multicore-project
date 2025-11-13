@@ -15,11 +15,11 @@ El propósito central es demostrar cómo el uso de paralelismo en Python puede o
 
 ### Backend (Python)
 - **requests:** Realiza las solicitudes HTTP a las páginas y APIs.
-- **BeautifulSoup4:** Analiza y etrae datos estructurados delas páginas HTML.
+- **BeautifulSoup4:** Analiza y extrae datos estructurados de las páginas HTML.
 - **concurrent.futures.ThreadPoolExecutor:** Implementa el procesamiento paralelo.
 - **firebase_admin:** Conecta y envía datos al Realtime Database de Firebase.
 - **howlongtobeatpy:** Obtiene información sobre la duración estimada de los videojuegos.
-- **Steam API:** Recupera precios precios y detalles oficiales de cada título.
+- **Steam API:** Recupera precios y detalles oficiales de cada título.
 
 ### Frontend (Interfaz de usuario)
 - **HTML:** Define la estructura de las páginas, como los títulos, botones, imágenes y listas de juegos.
@@ -30,23 +30,23 @@ El propósito central es demostrar cómo el uso de paralelismo en Python puede o
 ## Estructura del Proyecto
 
 - `/index.html`: Página principal con la lista de juegos.
-- `/webScrapping.py`: Script pricipal de scraping y carga de datos.
+- `/webScrapping.py`: Script principal de scraping y carga de datos.
 - `/Lista de Juegos.txt`: Lista base de juegos a procesar. 
 
 ## Funcionamiento General
 ### 1. Entrada:
-El sistema toma una lista de juegos desde **Lista de Juegos.txt**.
+El sistema toma una lista de juegos desde `/Lista de Juegos.txt`.
 
 ### 2. Extracción de datos (Scraping):
-El script **webScrapping.py** ejecuta múltiples hilos concurrentes para:
-- Consultar la API de Steam y obtener el precio actual de cada título.
+El script `/webScrapping.py` ejecuta múltiples hilos concurrentes para:
+- Consultar la API de *Steam* y obtener el precio actual de cada título.
 - Consultar la API de *HowLongToBeat* para conocer la duración promedio.
 
 ### 3. Procesamiento y envío:
 Los datos obtenidos se limpian, transforman y envían al **Firebase Realtime Database** mediante el SDK de **firebase_admin**.
 
 ### 4. Visualización:
-La interfaz web *(index.html y details.html)* conecta con Firebase usando JavaScript y muestra la información actualizada en tiempo real, permitiendo explorar los juegos registrados.
+La interfaz web `/*(index.html y details.html)*` conecta con Firebase usando JavaScript y muestra la información actualizada en tiempo real, permitiendo explorar los juegos registrados.
 
 ## Ejecución del Proyecto
 ### 1. Instalación de dependencias
@@ -64,14 +64,14 @@ Estas “dependencias” son librerías que el proyecto necesita para realizar t
 python webScrapping.py
 ```
 Este proceso:
-- Lee los nombres de los juegos desde `/Lista de Juegos.txt`.
+- Lee los nombres de los juegos desde `Lista de Juegos.txt`.
 - Obtiene datos desde *Steam* y *HowLongToBeat*.
-- Sube los resultados automáticamente al Realtime Database de Firebase.
+- Sube los resultados automáticamente al *Realtime Database de Firebase*.
 
 ### 3. Visualizar los resultados
 Abre el archivo `/index.html` en un navegador web.
 Allí se podrán explorar los juegos disponibles, ver los precios, duración y otros datos mostrados en tiempo real.
 
-## Conclusion
+## Conclusión
 El proyecto **GameTECs** demuestra que el uso de técnicas de multihilo y automatización de datos puede mejorar considerablemente la eficiencia de los procesos de recopilación y actualización de información en entornos reales.
 Además, evidencia la importancia de combinar la programación concurrente con herramientas modernas de nube y desarrollo web, logrando sistemas integrales, escalables y de fácil mantenimiento.
