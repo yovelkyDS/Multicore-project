@@ -68,7 +68,7 @@ Este proceso:
 - Obtiene datos desde *Steam* y *HowLongToBeat*.
 - Sube los resultados automáticamente al Realtime Database de Firebase.
 
-### 3. Visualizae los resultados
+### 3. Visualizar los resultados
 Abre el archivo `/index.html` en un navegador web.
 Allí se podrán explorar los juegos disponibles, ver los precios, duración y otros datos mostrados en tiempo real.
 
