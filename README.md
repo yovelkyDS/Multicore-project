@@ -35,10 +35,10 @@ El propósito central es demostrar cómo el uso de paralelismo en Python puede o
 
 ## Funcionamiento General
 ### 1. Entrada:
-El sistema toma una lista de juegos desde `/Lista de Juegos.txt`.
+El sistema toma una lista de juegos desde `Lista de Juegos.txt`.
 
 ### 2. Extracción de datos (Scraping):
-El script `/webScrapping.py` ejecuta múltiples hilos concurrentes para:
+El script `webScrapping.py` ejecuta múltiples hilos concurrentes para:
 - Consultar la API de *Steam* y obtener el precio actual de cada título.
 - Consultar la API de *HowLongToBeat* para conocer la duración promedio.
 
@@ -46,7 +46,7 @@ El script `/webScrapping.py` ejecuta múltiples hilos concurrentes para:
 Los datos obtenidos se limpian, transforman y envían al **Firebase Realtime Database** mediante el SDK de **firebase_admin**.
 
 ### 4. Visualización:
-La interfaz web `/*(index.html y details.html)*` conecta con Firebase usando JavaScript y muestra la información actualizada en tiempo real, permitiendo explorar los juegos registrados.
+La interfaz web `(index.html y details.html)` conecta con Firebase usando JavaScript y muestra la información actualizada en tiempo real, permitiendo explorar los juegos registrados.
 
 ## Ejecución del Proyecto
 ### 1. Instalación de dependencias
@@ -69,7 +69,7 @@ Este proceso:
 - Sube los resultados automáticamente al *Realtime Database de Firebase*.
 
 ### 3. Visualizar los resultados
-Abre el archivo `/index.html` en un navegador web.
+Abre el archivo `index.html` en un navegador web.
 Allí se podrán explorar los juegos disponibles, ver los precios, duración y otros datos mostrados en tiempo real.
 
 ## Conclusión
